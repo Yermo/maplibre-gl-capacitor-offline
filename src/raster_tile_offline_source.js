@@ -1,6 +1,6 @@
-import RasterTileSource from 'mapbox-gl/src/source/raster_tile_source';
-import { extend, pick } from 'mapbox-gl/src/util/util'
-import Texture from 'mapbox-gl/src/render/texture'
+import RasterTileSource from 'maplibre-gl/src/source/raster_tile_source';
+import { extend, pick } from 'maplibre-gl/src/util/util'
+import Texture from 'maplibre-gl/src/render/texture'
 import Database from './database'
 
 class RasterTileSourceOffline extends RasterTileSource {

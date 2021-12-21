@@ -2,11 +2,12 @@
 
 'use strict';
 
+import maplibregl from 'maplibre-gl'
+
 import MBTilesSource from './mbtiles_source'
 import RasterTileSourceOffline from "./raster_tile_offline_source"
-import Map from 'mapbox-gl/src/ui/map'
-import {extend} from 'mapbox-gl/src/util/util'
-import window from 'mapbox-gl/src/util/window'
+import {extend} from 'maplibre-gl/src/util/util'
+import window from 'maplibre-gl/src/util/window'
 
 const readJSON = (url) => new Promise((resolve, reject) => {
     const xhr = new window.XMLHttpRequest();
@@ -16,6 +17,9 @@ const readJSON = (url) => new Promise((resolve, reject) => {
     xhr.onload = () => {
         const isFile = xhr.responseURL.indexOf('file://') === 0;
         if (((xhr.status >= 200 && xhr.status < 300) || isFile) && xhr.response) {
+
+            console.log( "OfflineMap.readJSON(): attemptingt to parse:", xhr.response );
+
             try {
                 resolve(JSON.parse(xhr.response));
             } catch (err) {
@@ -50,40 +54,63 @@ const absoluteSpriteUrl = (options) => {
     return options;
 };
 
-const createEmptyMap = (options) => new Promise((resolve) => {
+const createEmptyMap = (options) => new Promise( (resolve ) => {
     const emptyMapStyle = extend({}, options.style, {
         sources: {},
         layers: []
     });
-    const emptyMapOptions = extend({}, options, {style: emptyMapStyle});
-    const map = new Map(emptyMapOptions);
-    map.once('load', () => {
-        let mbTilesSourceLoaded = new Promise((resolve) => {
-            map.addSourceType('mbtiles', MBTilesSource, () => resolve())
-        })
-        let rasterOfflineSourceLoaded = new Promise((resolve) => {
-            map.addSourceType('rasteroffline', RasterTileSourceOffline, () => resolve())
-        })
 
-        Promise.all([mbTilesSourceLoaded, rasterOfflineSourceLoaded]).then(() => resolve(map))
+    const emptyMapOptions = extend({}, options, {style: emptyMapStyle});
+    const map = new maplibregl.Map( emptyMapOptions );
+
+    map.once( 'load', () => {
+
+        console.log( "OfflineMap.createEmptyMap(): load once callback caught." );
+
+        let mbTilesSourceLoaded = new Promise((resolve) => {
+            map.addSourceType( 'mbtiles', MBTilesSource, () => resolve() )
+        });
+
+        let rasterOfflineSourceLoaded = new Promise((resolve) => {
+            map.addSourceType( 'rasteroffline', RasterTileSourceOffline, () => resolve() )
+        });
+
+        Promise.all([mbTilesSourceLoaded, rasterOfflineSourceLoaded]).then( () => {
+
+          console.log( "OfflineMap.createEmptyMap(): map resolved.", map );
+          resolve( map );
+
+        });
     });
 });
 
 const loadSources = (style) => (map) => {
-    Object.keys(style.sources).map((sourceName) => map.addSource(sourceName, style.sources[sourceName]));
+
+    console.log( "index.html: loading sources:", style.sources );
+
+    Object.keys( style.sources ).map( (sourceName) => map.addSource(sourceName, style.sources[sourceName]) );
     return map;
 };
 
 const loadLayers = (style) => (map) => {
+
+    console.log( "index.html: loading layers:", style.layers );
+
     style.layers.map((layer) => map.addLayer(layer));
+
     return map;
 };
 
+/**
+* create offline map object
+*/
+
 const OfflineMap = (options) =>
-    dereferenceStyle(options).then(absoluteSpriteUrl).then((newOptions) =>
+    dereferenceStyle( options ).then( absoluteSpriteUrl ).then( (newOptions) =>
         createEmptyMap(newOptions)
             .then(loadSources(newOptions.style))
             .then(loadLayers(newOptions.style))
+
     );
 
 export default OfflineMap

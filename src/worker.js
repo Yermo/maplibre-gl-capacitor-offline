@@ -1,14 +1,14 @@
 // @flow
 
-import Actor from 'mapbox-gl/src/util/actor';
+import Actor from 'maplibre-gl/src/util/actor';
 
-import StyleLayerIndex from 'mapbox-gl/src/style/style_layer_index';
-import VectorTileWorkerSource from 'mapbox-gl/src/source/vector_tile_worker_source';
-import RasterDEMTileWorkerSource from 'mapbox-gl/src/source/raster_dem_tile_worker_source';
-import RasterTileSourceOffline from './raster_tile_offline_source';
-import GeoJSONWorkerSource from 'mapbox-gl/src/source/geojson_worker_source';
+import StyleLayerIndex from 'maplibre-gl/src/style/style_layer_index';
+import VectorTileWorkerSource from 'maplibre-gl/src/source/vector_tile_worker_source';
+import RasterDEMTileWorkerSource from 'maplibre-gl/src/source/raster_dem_tile_worker_source';
+import GeoJSONWorkerSource from 'maplibre-gl/src/source/geojson_worker_source';
 import assert from 'assert';
-import { plugin as globalRTLTextPlugin } from 'mapbox-gl/src/source/rtl_text_plugin';
+import {plugin as globalRTLTextPlugin} from 'maplibre-gl/src/source/rtl_text_plugin';
+import {enforceCacheSizeLimit} from 'maplibre-gl/src/util/tile_request_cache';
 
 import type {
     WorkerSource,
@@ -17,11 +17,14 @@ import type {
     WorkerTileCallback,
     WorkerDEMTileCallback,
     TileParameters
-} from 'mapbox-gl/src/source/worker_source';
+} from 'maplibre-gl/src/source/worker_source';
 
-import type {WorkerGlobalScopeInterface} from 'mapbox-gl/src/util/web_worker';
-import type {Callback} from 'mapbox-gl/src/types/callback';
-import type {LayerSpecification} from 'mapbox-gl/src/style-spec/types';
+import type {WorkerGlobalScopeInterface} from 'maplibre-gl/src/util/web_worker';
+import type {Callback} from 'maplibre-gl/src/types/callback';
+import type {LayerSpecification} from 'maplibre-gl/src/style-spec/types';
+import type {PluginState} from 'maplibre-gl/src/source/rtl_text_plugin';
+
+import RasterTileSourceOffline from './raster_tile_offline_source';
 
 /**
  * @private
@@ -29,22 +32,27 @@ import type {LayerSpecification} from 'mapbox-gl/src/style-spec/types';
 export default class Worker {
     self: WorkerGlobalScopeInterface;
     actor: Actor;
-    layerIndexes: { [string]: StyleLayerIndex };
-    workerSourceTypes: { [string]: Class<WorkerSource> };
-    workerSources: { [string]: { [string]: { [string]: WorkerSource } } };
-    demWorkerSources: { [string]: { [string]: RasterDEMTileWorkerSource } };
+    layerIndexes: {[_: string]: StyleLayerIndex };
+    availableImages: {[_: string]: Array<string> };
+    workerSourceTypes: {[_: string]: Class<WorkerSource> };
+    workerSources: {[_: string]: {[_: string]: {[_: string]: WorkerSource } } };
+    demWorkerSources: {[_: string]: {[_: string]: RasterDEMTileWorkerSource } };
     referrer: ?string;
 
     constructor(self: WorkerGlobalScopeInterface) {
+
+        console.log( "Worker.constructor()" );
+
         this.self = self;
         this.actor = new Actor(self, this);
 
         this.layerIndexes = {};
+        this.availableImages = {};
 
         this.workerSourceTypes = {
             vector: VectorTileWorkerSource,
-            mbtiles: VectorTileWorkerSource,
             geojson: GeoJSONWorkerSource,
+            mbtiles: VectorTileWorkerSource,
             rasteroffline: RasterTileSourceOffline
         };
 
@@ -59,8 +67,9 @@ export default class Worker {
             this.workerSourceTypes[name] = WorkerSource;
         };
 
+        // This is invoked by the RTL text plugin when the download via the `importScripts` call has finished, and the code has been parsed.
         this.self.registerRTLTextPlugin = (rtlTextPlugin: {applyArabicShaping: Function, processBidirectionalText: Function, processStyledBidirectionalText?: Function}) => {
-            if (globalRTLTextPlugin.isLoaded()) {
+            if (globalRTLTextPlugin.isParsed()) {
                 throw new Error('RTL text plugin already registered.');
             }
             globalRTLTextPlugin['applyArabicShaping'] = rtlTextPlugin.applyArabicShaping;
@@ -71,6 +80,17 @@ export default class Worker {
 
     setReferrer(mapID: string, referrer: string) {
         this.referrer = referrer;
+    }
+
+    setImages(mapId: string, images: Array<string>, callback: WorkerTileCallback) {
+        this.availableImages[mapId] = images;
+        for (const workerSource in this.workerSources[mapId]) {
+            const ws = this.workerSources[mapId][workerSource];
+            for (const source in ws) {
+                ws[source].availableImages = images;
+            }
+        }
+        callback();
     }
 
     setLayers(mapId: string, layers: Array<LayerSpecification>, callback: WorkerTileCallback) {
@@ -84,6 +104,9 @@ export default class Worker {
     }
 
     loadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
+
+        console.log( "Worker.loadTile(): mapId:", mapId );
+
         assert(params.type);
         this.getWorkerSource(mapId, params.type, params.source).loadTile(params, callback);
     }
@@ -93,16 +116,25 @@ export default class Worker {
     }
 
     reloadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
+
+        console.log( "Worker.reloadTile(): mapId:", mapId );
+
         assert(params.type);
         this.getWorkerSource(mapId, params.type, params.source).reloadTile(params, callback);
     }
 
     abortTile(mapId: string, params: TileParameters & {type: string}, callback: WorkerTileCallback) {
+
+        console.log( "Worker.abortTile(): mapId:", mapId );
+
         assert(params.type);
         this.getWorkerSource(mapId, params.type, params.source).abortTile(params, callback);
     }
 
     removeTile(mapId: string, params: TileParameters & {type: string}, callback: WorkerTileCallback) {
+
+        console.log( "Worker.loadTile(): removeTile:", mapId );
+
         assert(params.type);
         this.getWorkerSource(mapId, params.type, params.source).removeTile(params, callback);
     }
@@ -112,6 +144,9 @@ export default class Worker {
     }
 
     removeSource(mapId: string, params: {source: string} & {type: string}, callback: WorkerTileCallback) {
+
+        console.log( "Worker.removeSource(): mapId:", mapId );
+
         assert(params.type);
         assert(params.source);
 
@@ -138,6 +173,9 @@ export default class Worker {
      *  @private
      */
     loadWorkerSource(map: string, params: { url: string }, callback: Callback<void>) {
+
+        console.log( "Worker.loadWorkerSource(): map:", map );
+
         try {
             this.self.importScripts(params.url);
             callback();
@@ -146,17 +184,33 @@ export default class Worker {
         }
     }
 
-    loadRTLTextPlugin(map: string, pluginURL: string, callback: Callback<void>) {
+    syncRTLPluginState(map: string, state: PluginState, callback: Callback<boolean>) {
         try {
-            if (!globalRTLTextPlugin.isLoaded()) {
+            globalRTLTextPlugin.setState(state);
+            const pluginURL = globalRTLTextPlugin.getPluginURL();
+            if (
+                globalRTLTextPlugin.isLoaded() &&
+                !globalRTLTextPlugin.isParsed() &&
+                pluginURL != null // Not possible when `isLoaded` is true, but keeps flow happy
+            ) {
                 this.self.importScripts(pluginURL);
-                callback(globalRTLTextPlugin.isLoaded() ?
-                    null :
-                    new Error(`RTL Text Plugin failed to import scripts from ${pluginURL}`));
+                const complete = globalRTLTextPlugin.isParsed();
+                const error = complete ? undefined : new Error(`RTL Text Plugin failed to import scripts from ${pluginURL}`);
+                callback(error, complete);
             }
         } catch (e) {
             callback(e.toString());
         }
+    }
+
+    getAvailableImages(mapId: string) {
+        let availableImages = this.availableImages[mapId];
+
+        if (!availableImages) {
+            availableImages = [];
+        }
+
+        return availableImages;
     }
 
     getLayerIndex(mapId: string) {
@@ -168,6 +222,9 @@ export default class Worker {
     }
 
     getWorkerSource(mapId: string, type: string, source: string) {
+
+        console.log( "Worker.getWorkerSource(): mapId:", mapId );
+
         if (!this.workerSources[mapId])
             this.workerSources[mapId] = {};
         if (!this.workerSources[mapId][type])
@@ -181,8 +238,7 @@ export default class Worker {
                     this.actor.send(type, data, callback, mapId);
                 }
             };
-
-            this.workerSources[mapId][type][source] = new (this.workerSourceTypes[type]: any)((actor: any), this.getLayerIndex(mapId));
+            this.workerSources[mapId][type][source] = new (this.workerSourceTypes[type]: any)((actor: any), this.getLayerIndex(mapId), this.getAvailableImages(mapId));
         }
 
         return this.workerSources[mapId][type][source];
@@ -197,6 +253,10 @@ export default class Worker {
         }
 
         return this.demWorkerSources[mapId][source];
+    }
+
+    enforceCacheSizeLimit(mapId: string, limit: number) {
+        enforceCacheSizeLimit(limit);
     }
 }
 

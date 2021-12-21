@@ -1,4 +1,5 @@
-import VectorTileSource from 'mapbox-gl/src/source/vector_tile_source'
+import VectorTileSource from 'maplibre-gl/src/source/vector_tile_source'
+import browser from 'maplibre-gl/src/util/browser'
 import pako from 'pako/lib/inflate'
 import base64js from 'base64-js'
 import Database from './database'
@@ -63,38 +64,50 @@ class MBTilesSource extends VectorTileSource {
                 request: { url: "data:application/x-protobuf;base64," + base64Data },
                 uid: tile.uid,
                 tileID: tile.tileID,
-                zoom: coord.z,
-                tileSize: this.tileSize * overscaling,
+                zoom: tile.tileID.overscaledZ,
+                tileSize: this.tileSize * tile.tileID.overscaleFactor(),
                 type: this.type,
                 source: this.id,
-                pixelRatio: window.devicePixelRatio || 1,
+                pixelRatio: browser.devicePixelRatio,
                 overscaling: overscaling,
-                showCollisionBoxes: this.map.showCollisionBoxes
+                showCollisionBoxes: this.map.showCollisionBoxes,
+                promoteId: this.promoteId
             };
 
-            if (!tile.workerID || tile.state === 'expired') {
-                tile.workerID = this.dispatcher.send('loadTile', params, done.bind(this));
+            if (!tile.actor || tile.state === 'expired') {
+
+                console.log( "MBTilesSource.display(): sending 'loadTile'" );
+
+                tile.actor = this.dispatcher.getActor();
+                tile.request = tile.actor.send('loadTile', params, done.bind(this));
             } else if (tile.state === 'loading') {
                 // schedule tile reloading after it has been loaded
                 tile.reloadCallback = callback;
             } else {
-                this.dispatcher.send('reloadTile', params, done.bind(this), tile.workerID);
+                tile.request = tile.actor.send('reloadTile', params, done.bind(this));
             }
 
             function done(err, data) {
-                if (tile.aborted)
+
+                console.log( "MBTilesSource.done(): called with err and data:'", err, data );
+
+                if (tile.aborted) {
                     return;
+                }
 
                 if (err) {
                     return callback(err);
                 }
 
-                if (this.map._refreshExpiredTiles) tile.setExpiryData(data);
+                if ( this.map._refreshExpiredTiles ) {
+                  tile.setExpiryData(data);
+                }
+
                 tile.loadVectorData(data, this.map.painter);
 
                 callback(null);
 
-                if (tile.reloadCallback) {
+                if ( tile.reloadCallback ) {
                     this.loadTile(tile, tile.reloadCallback);
                     tile.reloadCallback = null;
                 }

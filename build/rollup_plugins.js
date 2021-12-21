@@ -5,25 +5,31 @@ import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import unassert from 'rollup-plugin-unassert';
 import json from 'rollup-plugin-json';
-import { terser } from 'rollup-plugin-terser';
+import {terser} from 'rollup-plugin-terser';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec';
-import { createFilter } from 'rollup-pluginutils';
-
-const {BUILD, MINIFY} = process.env;
-const minified = MINIFY === 'true';
-const production = BUILD === 'production';
+import {createFilter} from 'rollup-pluginutils';
+import strip from '@rollup/plugin-strip';
 
 // Common set of plugins/transformations shared across different rollup
-// builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
+// builds (main maplibre bundle, style-spec package, benchmarks bundle)
 
-export const plugins = () => [
+export const plugins = (minified, production) => [
     flow(),
     minifyStyleSpec(),
     json(),
-    glsl('node_modules/mapbox-gl/src/shaders/*.glsl', production),
-    production ? unassert() : false,
-    minified ? terser() : false,
+    production ? strip({
+        sourceMap: true,
+        functions: ['PerformanceUtils.*', 'Debug.*']
+    }) : false,
+    glsl('node_modules/maplibre-gl/src/shaders/*.glsl', production),
     buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
+    minified ? terser({
+        compress: {
+            pure_getters: true,
+            passes: 3
+        }
+    }) : false,
+    production ? unassert() : false,
     resolve({
         browser: true,
         preferBuiltins: false

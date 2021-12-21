@@ -4,10 +4,14 @@
     <meta charset='utf-8'/>
     <title></title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no'/>
-    <link href='mapbox-gl.css' rel='stylesheet'/>
+    <link href='maplibre-gl.css' rel='stylesheet'/>
+
     <script type="text/javascript" src="cordova.js"></script>
-    <!--script src='http://172.27.203.11:8080/www/mapbox-gl-cordova-offline-dev.js'></script-->
-    <script src='mapbox-gl-cordova-offline.js'></script>
+
+    <!--script src='http://172.27.203.11:8080/www/maplibre-gl-capacitor-offline-dev.js'></script-->
+
+    <script src='maplibre-gl-capacitor-offline-dev.js'></script>
+
     <style>
         body {
             margin: 0;
@@ -26,10 +30,10 @@
 
 <div id='map'></div>
 <script>
-    'cordova' in window ? document.addEventListener('deviceready', init, false) : init()
+    'cordova' in window ? document.addEventListener( 'deviceready', init, false) : init();
 
     function init () {
-        new mapboxgl.OfflineMap({
+      let mapView = maplibregl.OfflineMap({
             container: 'map',
             style: 'styles/osm-bright/style-offline.json',
             center: [
@@ -39,10 +43,14 @@
             zoom: 12,
             bearing: -45,
             hash: true
-        }).then(function (map) {
-            map.addControl(new mapboxgl.NavigationControl())
-        })
-    }
+        }).then( ( map ) => {
+
+            console.log( "index.html - map resolved:", map );
+
+            map.addControl( new maplibregl.NavigationControl() )
+        });
+
+    };
 </script>
 
 <!-- Code needed for live-reload when debugging -->

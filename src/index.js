@@ -1,7 +1,7 @@
-import mapboxgl from 'mapbox-gl/src/index'
+import maplibregl from 'maplibre-gl'
 
 import offlineMap from './offline_map'
 
-mapboxgl.OfflineMap = offlineMap
+maplibregl.OfflineMap = offlineMap
 
-export default mapboxgl
+export default maplibregl

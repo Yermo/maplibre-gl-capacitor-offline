@@ -7,8 +7,8 @@ const {BUILD, MINIFY} = process.env;
 const minified = MINIFY === 'true';
 const production = BUILD === 'production';
 const outputFile =
-    !production ? 'www/mapbox-gl-cordova-offline-dev.js':
-    minified ? 'www/mapbox-gl-cordova-offline.js'  : 'www/mapbox-gl-cordova-offline-unminified.js';
+    !production ? 'www/maplibre-gl-capacitor-offline-dev.js':
+    minified ? 'www/maplibre-gl-capacitor-offline.js'  : 'www/maplibre-gl-capacitor-offline-unminified.js';
 
 const config = [{
     // First, use code splitting to bundle GL JS into three "chunks":
@@ -21,7 +21,7 @@ const config = [{
     // sources as strings, etc.
     input: ['src/index.js', 'src/worker.js'],
     output: {
-        dir: 'rollup/build/mapboxgl',
+        dir: 'rollup/build/maplibregl',
         format: 'amd',
         sourcemap: 'inline',
         indent: false,
@@ -34,9 +34,9 @@ const config = [{
     // Next, bundle together the three "chunks" produced in the previous pass
     // into a single, final bundle. See rollup/bundle_prelude.js and
     // rollup/mapboxgl.js for details.
-    input: 'rollup/mapboxgl.js',
+    input: 'rollup/maplibregl.js',
     output: {
-        name: 'mapboxgl',
+        name: 'maplibregl',
         file: outputFile,
         format: 'umd',
         sourcemap: production ? true : 'inline',
