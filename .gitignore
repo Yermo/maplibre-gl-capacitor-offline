@@ -3,5 +3,5 @@ node_modules/
 platforms/
 plugins/
 .DS_Store
-rollup/build/mapboxgl/
+rollup/build/maplibregl/
 

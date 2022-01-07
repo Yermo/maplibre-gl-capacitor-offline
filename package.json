@@ -1,5 +1,5 @@
 {
-  "name": "maplibre-gl-capacitor-offline",
+  "name": "@yermo/maplibre-gl-capacitor-offline",
   "version": "1.15.2",
   "description": "Offline vector maps in Capacitor using MapLibre GL JS based on mapbox-gl-cordova-offline by Oscar Fonts",
   "main": "www/maplibre-gl-capacitor-offline.js",
@@ -16,7 +16,7 @@
   "license": "SEE LICENSE IN LICENSE.txt",
   "repository": {
     "type": "git",
-    "url": "git@github.com:Yermo/maplibre-gl-capacitor-offline.git"
+    "url": "git+ssh://git@github.com/Yermo/maplibre-gl-capacitor-offline.git"
   },
   "devDependencies": {
     "@mapbox/flow-remove-types": "1.3.0-await.upstream.1",
@@ -66,5 +66,9 @@
       "ios",
       "android"
     ]
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/Yermo/maplibre-gl-capacitor-offline/issues"
+  },
+  "homepage": "https://github.com/Yermo/maplibre-gl-capacitor-offline#readme"
 }
