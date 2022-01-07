@@ -1,6 +1,6 @@
 # Offline vector maps in Capacitor using MapLibre GL JS
 
-A mapbox-gl-js build capable of reading local mbtiles in cordova.
+A mapbox-gl-js build capable of reading local mbtiles in Capacitor.
 Tested on Android, and (to a lesser extent) on iOS.
 
 
@@ -20,7 +20,7 @@ as style, both coming from the OpenMapTiles project: https://openmaptiles.org/
 ## Integrate in your application
 
 Use the bundled library from `www/maplibre-gl-capacitor-offline.js` which is based in maplibre-gl-js v.1.15.2, or install it
-as npm dependency (`npm install yermo/maplibre-gl-capacitor-offline`).
+as npm dependency (`npm install @yermo/maplibre-gl-capacitor-offline`).
 
 This project relies on these legacy cordova plugins:
 
