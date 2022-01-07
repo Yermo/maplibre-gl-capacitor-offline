@@ -1,4 +1,4 @@
-# Offline vector maps in Cordova using Mapbox GL JS
+# Offline vector maps in Capacitor using MapLibre GL JS
 
 A mapbox-gl-js build capable of reading local mbtiles in cordova.
 Tested on Android, and (to a lesser extent) on iOS.
@@ -8,29 +8,21 @@ Tested on Android, and (to a lesser extent) on iOS.
 
 ```
 npm install
-cordova platform add android
-cordova run android
+npx cap add android | ios
+npm run build-dev
+npx cap sync
+npx cap run android | ios
 ```
-
-**The Android emulator browser won't display WebGL content, please run on a physical Android device**
-
-```
-npm install
-cordova platform add ios
-cordova run ios
-```
-
 
 Will use `www/data/2017-07-03_spain_barcelona.mbtiles` as sample data source, and `www/styles/osm-bright/style-offline.json`
 as style, both coming from the OpenMapTiles project: https://openmaptiles.org/
 
-
 ## Integrate in your application
 
-Use the bundled library from `www/mapbox-gl-cordova-offline.js` which is based in mapbox-gl-js v.0.53.1, or install it
-as npm dependency (`npm install oscarfonts/mapbox-gl-cordova-offline`).
+Use the bundled library from `www/maplibre-gl-capacitor-offline.js` which is based in maplibre-gl-js v.1.15.2, or install it
+as npm dependency (`npm install yermo/maplibre-gl-capacitor-offline`).
 
-Add the following cordova plugins via "cordova plugin add" command:
+This project relies on these legacy cordova plugins:
 
     * "cordova-plugin-device"
     * "cordova-plugin-file"
@@ -136,15 +128,3 @@ style:
 ```json
 "glyphs": "fonts/{fontstack}/{range}.pbf"
 ```
-
-
-## Enable live reload for development
-
-1. Get the your development computer's IP address (`ifconfig`).
-2. Edit `www/index.html` and put your IP address in the script tag that loads the `mapbox-gl-cordova-offline.js` resource:
-   `<script src='http://xxx.xxx.xxx.xxx:8080/www/mapbox-gl-cordova-offline.js'></script>`. For live reload to work,
-   change also the IP_ADDRESS_AND_PORT var, and uncomment the code block at the end of the document.
-3. Run `npm start`.
-
-Every time the contents in `src/` are changed, the file `www/mapbox-gl-cordova-offline.js` will be rebuilt, and the
-web view will be reloaded.

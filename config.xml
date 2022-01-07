@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="co.geomati.mapboxGLCordovaOffline" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>Mapbox GL Cordova Offline</name>
+<widget id="com.flyingbricksoftware.maplibreGLCapacitorOffline" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>Maplibre GL Capacitor Offline</name>
     <description>
-        Offline vector maps in Cordova using Mapbox GL JS
+        Offline vector maps in Capacitor using Maplibre GL JS 1.15.2
     </description>
-    <author email="oscar.fonts@geomati.co" href="http://geomati.co">
-        Oscar Fonts
+    <author href="https://flyingbricksoftware.com">
+        Yermo Lamers
     </author>
     <content src="index.html" />
     <access origin="*" />

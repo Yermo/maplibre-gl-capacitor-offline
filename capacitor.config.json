@@ -1,0 +1,6 @@
+{
+  "appId": "com.flyingbricksoftware.maplibreGLCapacitorOffline",
+  "appName": "maplibre-gl-capacitor-offline",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
