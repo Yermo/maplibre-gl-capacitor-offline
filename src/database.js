@@ -29,8 +29,6 @@ class Database {
 
     console.log( "Database.openDatabase(): top with location : " + dbLocation );
 
-debugger;
-
     return new Promise( function( resolve, reject ) {
 
       if ( device.platform === 'Android' ) {
