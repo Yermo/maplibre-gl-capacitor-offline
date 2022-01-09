@@ -33,6 +33,9 @@
     'cordova' in window ? document.addEventListener( 'deviceready', init, false) : init();
 
     function init () {
+
+      setTimeout( () => {
+
       let mapView = maplibregl.OfflineMap({
             container: 'map',
             style: 'styles/osm-bright/style-offline.json',
@@ -49,6 +52,8 @@
 
             map.addControl( new maplibregl.NavigationControl() )
         });
+
+      }, 3000 );
 
     };
 </script>

@@ -10,6 +10,7 @@ import {extend} from 'maplibre-gl/src/util/util'
 import window from 'maplibre-gl/src/util/window'
 
 const readJSON = (url) => new Promise((resolve, reject) => {
+
     const xhr = new window.XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.setRequestHeader('Accept', 'application/json');
@@ -44,7 +45,7 @@ const dereferenceStyle = (options) => {
 const absoluteSpriteUrl = (options) => {
     const style = options.style;
     const hasProtocol = /^.+:\/\//;
-    const path = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
+    const path = window.location.origin;
 
     if (('sprite' in style) && !style.sprite.match(hasProtocol) &&
         ('glyphs' in style) && !style.glyphs.match(hasProtocol)) {

@@ -1,4 +1,4 @@
-/* Mapbox GL JS is licensed under the 3-Clause BSD License. Full text of license: https://github.com/mapbox/mapbox-gl-js/blob/v1.15.2/LICENSE.txt */
+/* Mapbox GL JS is licensed under the 3-Clause BSD License. Full text of license: https://github.com/mapbox/mapbox-gl-js/blob/v1.15.4/LICENSE.txt */
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 typeof define === 'function' && define.amd ? define(factory) :
@@ -3792,8 +3792,6 @@ Database.openDatabase = function openDatabase ( dbLocation ) {
   }
 
   console.log( "Database.openDatabase(): top with location : " + dbLocation );
-
-debugger;
 
   return new Promise( function( resolve, reject ) {
 
@@ -36537,6 +36535,7 @@ var MBTilesSource = /*@__PURE__*/(function (VectorTileSource) {
 //      
 
 var readJSON = function (url) { return new Promise(function (resolve, reject) {
+
     var xhr = new raster_tile_offline_source.window.XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.setRequestHeader('Accept', 'application/json');
@@ -36571,7 +36570,7 @@ var dereferenceStyle = function (options) {
 var absoluteSpriteUrl = function (options) {
     var style = options.style;
     var hasProtocol = /^.+:\/\//;
-    var path = raster_tile_offline_source.window.location.origin + raster_tile_offline_source.window.location.pathname.split('/').slice(0, -1).join('/');
+    var path = raster_tile_offline_source.window.location.origin;
 
     if (('sprite' in style) && !style.sprite.match(hasProtocol) &&
         ('glyphs' in style) && !style.glyphs.match(hasProtocol)) {
