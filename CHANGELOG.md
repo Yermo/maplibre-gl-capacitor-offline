@@ -1,7 +1,10 @@
 ### Changelog
 
-All notable changes to this project will be documented in this file. Dates are displayed in UTC.
+All notable changes to this project will be documented in this file.
 
+> 23 February 2022
+
+- Strip out console.logs. See rollup.config.js
 
 > 6 January 2022
 

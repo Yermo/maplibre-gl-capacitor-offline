@@ -1,6 +1,6 @@
 # Offline vector maps in Capacitor using MapLibre GL JS
 
-A mapbox-gl-js build capable of reading local mbtiles in Capacitor.
+A maplibre-gl-js build capable of reading local mbtiles in Capacitor.
 Tested on Android, and (to a lesser extent) on iOS.
 
 
@@ -32,16 +32,15 @@ Use the OfflineMap constructor. It returns a **promise** instead of a map, as th
 offline map creation process is asynchronous:
   
 ```javascript
-       new mapboxgl.OfflineMap({
+       new maplibregl.OfflineMap({
             container: 'map',
             style: 'styles/osm-bright/style-offline.json'
        }).then(function(map) {
-           map.addControl(new mapboxgl.NavigationControl());
+           map.addControl(new maplibregl.NavigationControl());
        });
 ```
 
 See `www/index.html` in this repo for a working example.
-
 
 ### Offline data sources (mbtiles)
 
@@ -128,3 +127,7 @@ style:
 ```json
 "glyphs": "fonts/{fontstack}/{range}.pbf"
 ```
+
+### Enabling console.log
+
+To enable console.log statements, comment out the strip() call in rollup.config.js

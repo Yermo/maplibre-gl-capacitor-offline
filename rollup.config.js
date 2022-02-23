@@ -1,6 +1,7 @@
 import fs from 'fs';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import {plugins} from './build/rollup_plugins';
+import strip from '@rollup/plugin-strip';
 
 const version = JSON.parse(fs.readFileSync('package.json')).version;
 const {BUILD, MINIFY} = process.env;
@@ -46,6 +47,11 @@ const config = [{
     },
     treeshake: false,
     plugins: [
+
+        // Comment this out to include console.log statements
+
+        strip(),
+
         // Ingest the sourcemaps produced in the first step of the build.
         // This is the only reason we use Rollup for this second pass
         sourcemaps()
