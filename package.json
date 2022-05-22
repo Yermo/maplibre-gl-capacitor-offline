@@ -1,6 +1,6 @@
 {
   "name": "@yermo/maplibre-gl-capacitor-offline",
-  "version": "1.15.5",
+  "version": "1.15.6",
   "description": "Offline vector maps in Capacitor using MapLibre GL JS based on mapbox-gl-cordova-offline by Oscar Fonts",
   "main": "www/maplibre-gl-capacitor-offline.js",
   "scripts": {
