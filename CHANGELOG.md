@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+> 22 May 2022
+
+- If a different mbtiles database is present in assets it will be copied over. 
+  This removes the need to uninstall and reinstall the app to change the basemap.
+
 > 23 February 2022
 
 - Strip out console.logs. See rollup.config.js

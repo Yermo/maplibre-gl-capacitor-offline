@@ -128,6 +128,10 @@ style:
 "glyphs": "fonts/{fontstack}/{range}.pbf"
 ```
 
+### Development Version
+
+To use the development version, edit www/index.html to include the -dev.js file.
+
 ### Enabling console.log
 
 To enable console.log statements, comment out the strip() call in rollup.config.js

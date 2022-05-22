@@ -3758,6 +3758,18 @@ TileBounds.prototype.contains = function contains (tileID             ) {
     return hit;
 };
 
+/**
+* Manage Database copying and opening
+*
+* In order to be used by sqlite, the tiles database must be copied
+* from the distribution assets directory to a working directory.
+*
+* The is only done when a new version of the tiles database is detected
+* as the files can be quite large and slow down the startup of the app.
+*
+* @link https://github.com/apache/cordova-plugin-file
+*/
+
 var Database = function Database () {};
 
 Database.openDatabase = function openDatabase ( dbLocation ) {
@@ -3809,13 +3821,11 @@ Database.openDatabase = function openDatabase ( dbLocation ) {
 
   }).then( function( targetDir ) {
 
-    source.listDirectories( cordova.file.applicationStorageDirectory );
-
-    // has the database file already been copied? 
+    // source.listDirectories( cordova.file.applicationStorageDirectory );
 
     return new Promise( function (resolve, reject) {
 
-      targetDir.getFile( dbName, {}, resolve, reject );
+      source.getDatabaseFile( dbLocation, dbName, targetDir, resolve, reject );
 
     }).catch( function () {
 
@@ -3854,9 +3864,95 @@ Database.openDatabase = function openDatabase ( dbLocation ) {
 // -------------------------------------------------------------------------------
 
 /**
+* Resolves to the current database file
+*
+* This method attempts to get the current database file. If none is present,
+* it will throw an error. The caller should copy the file from assets..
+*
+* If one is present it will compare it to the one in assets. If they are different,
+* it will throw an error, again the caller should copy the file.
+*
+* This allows the basemap of the app to be updated without having to force an uninstall
+* and reinstall of the app.
+*/
+
+Database.getDatabaseFile = function getDatabaseFile ( dbLocation, dbName, targetDir, resolve, reject ) {
+
+  targetDir.getFile( 
+    dbName, 
+    {}, 
+    function( currentFileEntry ) {
+
+      // we have an already copied file. 
+      //
+      // Get the FileEntry for the source database in assets.
+
+      var absPath =cordova.file.applicationDirectory + 'public/' + dbLocation;
+      resolveLocalFileSystemURL( 
+        absPath, 
+        function( sourceFileEntry ) {
+
+          // pull the MetaData, which contains the size, from both FileEntries.
+
+          currentFileEntry.getMetadata(
+            function( currentMetadata ) {
+
+              sourceFileEntry.getMetadata(
+                function( sourceMetadata ) {
+
+                  // FIXME: This is not a perfect was of determining whether two files are the same,
+                  // but the likelihood of two mbtiles files that are different having the exact same
+                  // byte count is very low. In a future version, maybe I'll include a small VERSION
+                  // file.
+
+                  if ( currentMetadata.size == sourceMetadata.size ) {
+                    resolve( currentFileEntry );
+                  } else {
+                    reject( currentFileEntry );
+                  }
+                  
+                },
+                function( error ) {
+      
+                  reject( error );
+
+                }
+              );
+                
+            },
+            function( error ) {
+
+              reject( error );
+
+            }
+          );
+
+        }, 
+        function( error ) {
+
+          // this should never happen.
+
+          reject( error );
+        }
+      );
+    },
+
+    // the file has not yet been copied.
+
+    reject 
+
+  );
+
+};
+   
+// -------------------------------------------------------------------------------
+
+/**
 * copy Database to working directory
 *
 * @return {Promise}
+*
+* @todo FIXME: remove duplication with getDatabaseFile(). 
 */
 
 Database.copyDatabaseFile = function copyDatabaseFile ( dbLocation, dbName, targetDir ) {
@@ -3884,47 +3980,47 @@ Database.copyDatabaseFile = function copyDatabaseFile ( dbLocation, dbName, targ
   });
 };
 
-  // ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
 
-  /**
-  * list out the contents of a given device directory to the console.
-  *
-  * @param {string} url
-  *
-  * @link https://stackoverflow.com/questions/35192695/phonegap-cordova-for-android-file-plugin-error-code-1
-  */
+/**
+* list out the contents of a given device directory to the console.
+*
+* @param {string} url
+*
+* @link https://stackoverflow.com/questions/35192695/phonegap-cordova-for-android-file-plugin-error-code-1
+*/
 
-  Database.listDirectories = function listDirectories ( url ) {
+Database.listDirectories = function listDirectories ( url ) {
 
-    var dirEntry = function (entry) {
-      var dirReader = entry.createReader();
-      dirReader.readEntries(
-        function (entries) {
-          for ( var i = 0, list = entries; i < list.length; i += 1 ) {
+  var dirEntry = function (entry) {
+    var dirReader = entry.createReader();
+    dirReader.readEntries(
+      function (entries) {
+        for ( var i = 0, list = entries; i < list.length; i += 1 ) {
 
-            var subEntry = list[i];
+          var subEntry = list[i];
 
-              if ( subEntry.isDirectory === true) {
+            if ( subEntry.isDirectory === true) {
 
-              // Recursive -- call back into this subdirectory
+            // Recursive -- call back into this subdirectory
 
-              dirEntry( subEntry );
-            } else {
-            }
-
+            dirEntry( subEntry );
+          } else {
           }
-        },
-        function (error) {
+
         }
-      );
-    };
-
-    var dirError = function (error) {
-    };
-
-    window.resolveLocalFileSystemURL( url, dirEntry, dirError );
-
+      },
+      function (error) {
+      }
+    );
   };
+
+  var dirError = function (error) {
+  };
+
+  window.resolveLocalFileSystemURL( url, dirEntry, dirError );
+
+};
 
 //      
 var HTMLImageElement = window$1.HTMLImageElement;
